@@ -1,23 +1,26 @@
 import { Action, Model, PluginCreator } from '@rematch/core'
 
-const createLoadingAction = (show) => (state, { name, action }: any) => ({
-  ...state,
-  global: state.global + (show ? 1 : -1),
-  models: {
-    ...state.models,
-    [name]: state.models[name] + (show ? 1 : -1),
-  },
-  effects: {
-    ...state.effects,
-    [name]: {
-      ...state.effects[name],
-      [action]: state.effects[name][action] + (show ? 1 : -1),
-    },
-  },
-})
+const createLoadingAction = (valueFn) =>
+  (show) =>
+    (state, { name, action }: any) => ({
+      ...state,
+      global: valueFn[show](state.global),
+      models: {
+        ...state.models,
+        [name]: valueFn[show](state.models[name]),
+      },
+      effects: {
+        ...state.effects,
+        [name]: {
+          ...state.effects[name],
+          [action]: valueFn[show](state.effects[name][action]),
+        },
+      },
+    })
 
 interface LoadingConfig {
   name?: string,
+  valueType?: string,
   whitelist?: string[],
   blacklist?: string[],
 }
@@ -38,11 +41,27 @@ const loadingPlugin = (config: LoadingConfig = {}): any => {
   }
 
   const loadingModelName = config.name || 'loading'
+
+  let valueFn
+  if (config.valueType === 'number') {
+    valueFn = {
+      hide: () => 0,
+      show: (v) => v + 1,
+    }
+  } else {
+    valueFn = {
+      hide: () => false,
+      show: () => true,
+    }
+  }
+
+  const loadingAction = createLoadingAction(valueFn)
+
   const loading: Model = {
     name: loadingModelName,
     reducers: {
-      hide: createLoadingAction(false),
-      show: createLoadingAction(true),
+      hide: loadingAction('hide'),
+      show: loadingAction('show'),
     },
     state: {
       effects: {},
