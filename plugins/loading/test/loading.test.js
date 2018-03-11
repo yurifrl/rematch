@@ -1,3 +1,6 @@
+const { init } = require('../../../src')
+const loadingPlugin = require('../src').default
+
 beforeEach(() => {
   jest.resetModules()
 })
@@ -17,36 +20,24 @@ const count = {
 
 describe('loading', () => {
   test('loading.global should be false for normal dispatched action', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
     })
-    dispatch.count.addOne()
+    store.dispatch.count.addOne()
     expect(store.getState().loading.global).toBe(false)
   })
 
   test('loading.global should be true for dispatched effect', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
     })
-    dispatch.count.timeout()
+    store.dispatch.count.timeout()
     expect(store.getState().loading.global).toBe(true)
   })
 
   test('should set loading.models[name] to false', () => {
-    const {
-      init
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
@@ -55,23 +46,15 @@ describe('loading', () => {
   })
 
   test('should change the loading.models', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
     })
-    dispatch.count.timeout()
+    store.dispatch.count.timeout()
     expect(store.getState().loading.models.count).toBe(true)
   })
 
   test('should set loading.effects[name] to object of effects', () => {
-    const {
-      init
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
@@ -80,36 +63,24 @@ describe('loading', () => {
   })
 
   test('should change the loading.effects', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin()]
     })
-    dispatch.count.timeout()
+    store.dispatch.count.timeout()
     expect(store.getState().loading.effects.count.timeout).toBe(true)
   })
 
   test('should configure the loading name', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin({ name: 'load' })]
     })
-    dispatch.count.addOne()
+    store.dispatch.count.addOne()
     expect(store.getState().load.global).toBe(false)
   })
 
   test('should throw if loading name is not a string', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const createStore = () => init({
       models: { count },
       plugins: [loadingPlugin({ name: 42 })]
@@ -118,40 +89,28 @@ describe('loading', () => {
   })
 
   test('should block items if not in whitelist', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin({
         whitelist: ['some/action'],
       })]
     })
-    dispatch.count.timeout()
+    store.dispatch.count.timeout()
     expect(store.getState().loading.models.count).toBe(false)
   })
 
   test('should block items if in blacklist', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const store = init({
       models: { count },
       plugins: [loadingPlugin({
         blacklist: ['count/timeout'],
       })]
     })
-    dispatch.count.timeout()
+    store.dispatch.count.timeout()
     expect(store.getState().loading.models.count).toBe(false)
   })
 
   test('should throw if whitelist is not an array', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const createStore = () => init({
       models: { count },
       plugins: [loadingPlugin({
@@ -162,10 +121,6 @@ describe('loading', () => {
   })
 
   test('should throw if blacklist is not an array', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const createStore = () => init({
       models: { count },
       plugins: [loadingPlugin({
@@ -176,10 +131,6 @@ describe('loading', () => {
   })
 
   test('should throw if contains both a whitelist & blacklist', () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const createStore = () => init({
       models: { count },
       plugins: [loadingPlugin({
@@ -191,10 +142,6 @@ describe('loading', () => {
   })
 
   test('should handle "hide" if effect throws', async () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const count = {
       state: 0,
       effects: {
@@ -208,18 +155,13 @@ describe('loading', () => {
       plugins: [loadingPlugin()]
     })
     try {
-      await dispatch.count.throwError()
+      await store.dispatch.count.throwError()
     } catch (err) {
       expect(store.getState().loading.global).toBe(false)
     }
   })
 
   test('should trigger three actions', async () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
-
     let actions = []
 
     const store = init({
@@ -232,16 +174,12 @@ describe('loading', () => {
       }
     })
 
-    await dispatch.count.timeout()
+    await store.dispatch.count.timeout()
 
     expect(actions).toEqual(['loading/show', 'count/addOne', 'loading/hide'])
   })
 
   test('should allow the propagation of the error', async () => {
-    const {
-        init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const count = {
         state: 0,
         effects: {
@@ -255,17 +193,13 @@ describe('loading', () => {
         plugins: [loadingPlugin()]
     })
     try {
-        await dispatch.count.throwError()
+        await store.dispatch.count.throwError()
     } catch (err) {
         expect(err.message).toBe('effect error')
     }
   })
 
   test('should allow the propagation of the meta object', async () => {
-    const {
-      init, dispatch
-    } = require('../../../src')
-    const loadingPlugin = require('../src').default
     const count = {
       state: 0,
       effects: {
@@ -280,7 +214,7 @@ describe('loading', () => {
     })
 
     try {
-      await dispatch.count.doSomething(null, { metaProp: 1 })
+      await store.dispatch.count.doSomething(null, { metaProp: 1 })
     } catch (err) {
       throw err
     }
