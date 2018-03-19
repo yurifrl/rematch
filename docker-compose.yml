@@ -1,0 +1,15 @@
+version: '3.5'
+services:
+  test:
+    image: node
+    working_dir: /usr/local/src
+    command: npm test
+    ports:
+      - 9876:9876
+    volumes:
+      - .:/usr/local/src
+      - node_modules:/usr/local/src/node_modules
+    environment:
+      NODE_ENV: "development" 
+volumes:
+  node_modules: {}
