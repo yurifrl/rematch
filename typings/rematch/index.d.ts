@@ -6,11 +6,15 @@ import { AnyAction, Dispatch, MiddlewareAPI, Middleware, ReducersMapObject, Stor
 
 export as namespace rematch
 
-export type RematchDispatch = {
-  [key: string]: {
-    [key:string]: (action: Action) => Promise<Dispatch<any>>
-  }
-} | ((action: Action) => Promise<Dispatch<any>>)
+export type RematchDispatchLiteral = {
+    [key: string]: {
+        [key: string]: (action?: Action) => Promise<Dispatch<any>>
+    }
+}
+
+export type RematchDispatchCall  = (any)
+
+export type RematchDispatch = RematchDispatchLiteral | RematchDispatchCall
 
 export let dispatch: RematchDispatch;
 export function init(config: Config | undefined): Store<any>
